@@ -39,4 +39,9 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+  it('should be empty', () => {
+    expect(component.form.getRawValue().email).toContain("")
+    expect(component.form.getRawValue().password).toContain("")
+    expect(component.onError).toBe(false)
+  });
 });
