@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const login = () => {
+const login = (admin: boolean) => {
   cy.visit('/login')
   cy.intercept('POST', '/api/auth/login', {
     statusCode: 200,
@@ -9,7 +9,7 @@ const login = () => {
       username: 'userName',
       firstName: 'firstName',
       lastName: 'lastName',
-      admin: true
+      admin: admin
     },
   })
 
@@ -42,16 +42,32 @@ describe("Session list", () => {
       statusCode: 200,
       body: yogaSessions(10),
     }).as('sessionList')
-    login()
   })
 
-  it('should show the session list', () => {
+  it('should show the session list as admin', () => {
+    login(true)
+
     cy.wait('@sessionList');
 
     cy.get('div.items').should('be.visible');
     cy.get('mat-card.item').should('have.length', 10);
     cy.get('mat-card.item button .ml1').first().should('contain.text', 'Detail')
     cy.get('mat-card.item button .ml1').eq(1).should('contain.text', 'Edit')
+    cy.get('mat-card button span.ml1').first().should('contain.text', 'Create')
 
   });
+
+  it('should show the session list as user', () => {
+    login(false)
+
+    cy.wait('@sessionList');
+
+    cy.get('div.items').should('be.visible');
+    cy.get('mat-card.item').should('have.length', 10);
+    cy.get('mat-card.item button .ml1').first().should('contain.text', 'Detail')
+    cy.get('mat-card.item button .ml1').eq(1).should('not.contain.text', 'Edit')
+    cy.get('mat-card button span.ml1').first().should('not.contain.text', 'Create')
+  });
 })
+
+
