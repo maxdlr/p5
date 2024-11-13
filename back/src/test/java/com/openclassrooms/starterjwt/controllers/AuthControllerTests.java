@@ -110,7 +110,7 @@ public class AuthControllerTests {
     public void testRegisterUserSuccessfully() {
         String email = "yoga@studio.com";
         String password = "test!1234";
-        String firstName = "maxime";
+        String firstName = "max";
         String lastName = "dlr";
 
         SignupRequest signUpRequest = new SignupRequest();
@@ -131,7 +131,7 @@ public class AuthControllerTests {
     public void testRegisterUserUnsuccessfully() {
         String email = "yoga@studio.com";
         String password = "test!1234";
-        String firstName = "maxime";
+        String firstName = "max";
         String lastName = "dlr";
 
         SignupRequest signUpRequest = new SignupRequest();
