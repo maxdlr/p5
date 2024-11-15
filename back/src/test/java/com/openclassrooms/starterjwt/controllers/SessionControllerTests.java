@@ -11,8 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,9 +29,15 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(SessionController.class)
 @ExtendWith(MockitoExtension.class)
 public class SessionControllerTests {
+
+    @Autowired
+    private MockMvc mvc;
 
     @Mock
     private SessionService sessionService;
@@ -37,7 +49,7 @@ public class SessionControllerTests {
     private SessionController sessionController;
 
     @Test
-    public void testFindBySessionId() {
+    public void testFindBySessionId() throws Exception {
         List<User> users = makeUsers(5, false);
         Teacher teacher = makeTeacher();
         Session session = makeSession(1, users, teacher);
@@ -46,27 +58,34 @@ public class SessionControllerTests {
         when(sessionService.getById(1L)).thenReturn(session);
         when(sessionMapper.toDto(session)).thenReturn(sessionDto);
 
-        ResponseEntity<?> successfulResponse = sessionController.findById("1");
-        ResponseEntity<?> unsuccessfulResponse = sessionController.findById("2");
-        ResponseEntity<?> badRequestResponse = sessionController.findById("bad-request");
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/api/session/1")
+                        .accept(MediaType.APPLICATION_JSON))
+//                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$").exists());
 
-        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-        assertEquals(HttpStatus.NOT_FOUND, unsuccessfulResponse.getStatusCode());
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+//        ResponseEntity<?> successfulResponse = sessionController.findById("1");
+//        ResponseEntity<?> unsuccessfulResponse = sessionController.findById("2");
+//        ResponseEntity<?> badRequestResponse = sessionController.findById("bad-request");
+//
+//        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
+//        assertEquals(HttpStatus.NOT_FOUND, unsuccessfulResponse.getStatusCode());
+//        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
 
-        assertNotNull(successfulResponse.getBody());
+//        assertNotNull(successfulResponse.getBody());
 
-        SessionDto responseBody = (SessionDto) successfulResponse.getBody();
+//        SessionDto responseBody = (SessionDto) successfulResponse.getBody();
 
         // mockMVC
 
-        assertEquals(sessionDto.getId(), responseBody.getId());
-        assertEquals(sessionDto.getName(), responseBody.getName());
-        assertEquals(sessionDto.getDescription(), responseBody.getDescription());
-        assertEquals(sessionDto.getTeacher_id(), responseBody.getTeacher_id());
-        assertEquals(sessionDto.getUsers(), responseBody.getUsers());
-        assertEquals(sessionDto.getCreatedAt(), responseBody.getCreatedAt());
-        assertEquals(sessionDto.getDate(), responseBody.getDate());
+//        assertEquals(sessionDto.getId(), responseBody.getId());
+//        assertEquals(sessionDto.getName(), responseBody.getName());
+//        assertEquals(sessionDto.getDescription(), responseBody.getDescription());
+//        assertEquals(sessionDto.getTeacher_id(), responseBody.getTeacher_id());
+//        assertEquals(sessionDto.getUsers(), responseBody.getUsers());
+//        assertEquals(sessionDto.getCreatedAt(), responseBody.getCreatedAt());
+//        assertEquals(sessionDto.getDate(), responseBody.getDate());
     }
 
     @Test

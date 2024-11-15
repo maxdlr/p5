@@ -174,7 +174,7 @@ describe("Session Creation", () => {
 
     cy.intercept('GET', '/api/teacher', {
       statusCode: 200,
-      body: [teacher(1)],
+      body: [teacher(1), teacher(2)],
     }).as('sessionList')
   });
 
