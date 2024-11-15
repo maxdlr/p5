@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,44 +38,10 @@ public class SessionControllerTests {
 
     @Test
     public void testFindBySessionId() {
-        Session session = new Session();
-
-        List<User> users = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            User user = new User();
-            user.setAdmin(false)
-                    .setId((long) i)
-                    .setEmail(i + "@gmail.com")
-                    .setCreatedAt(LocalDateTime.now())
-                    .setPassword("password")
-                    .setLastName("lastName")
-                    .setFirstName("firstName");
-            users.add(user);
-        }
-
-        Teacher teacher = new Teacher();
-        teacher.setId(1L)
-                .setFirstName("firstName")
-                .setLastName("lastName")
-                .setCreatedAt(LocalDateTime.now());
-
-        session
-                .setId(1L)
-                .setName("name")
-                .setDescription("description")
-                .setUsers(users)
-                .setTeacher(teacher)
-                .setCreatedAt(LocalDateTime.now())
-                .setDate(new Date());
-
-        SessionDto sessionDto = new SessionDto();
-        sessionDto.setId(1L);
-        sessionDto.setName("name");
-        sessionDto.setDescription("description");
-        sessionDto.setTeacher_id(teacher.getId());
-        sessionDto.setUsers(new ArrayList<>(List.of(1L, 2L, 3L, 4L, 5L)));
-        sessionDto.setCreatedAt(LocalDateTime.now());
-        sessionDto.setDate(new Date());
+        List<User> users = makeUsers(5, false);
+        Teacher teacher = makeTeacher();
+        Session session = makeSession(1, users, teacher);
+        SessionDto sessionDto = makeSessionDto(1, users, teacher);
 
         when(sessionService.getById(1L)).thenReturn(session);
         when(sessionMapper.toDto(session)).thenReturn(sessionDto);
@@ -91,6 +58,8 @@ public class SessionControllerTests {
 
         SessionDto responseBody = (SessionDto) successfulResponse.getBody();
 
+        // mockMVC
+
         assertEquals(sessionDto.getId(), responseBody.getId());
         assertEquals(sessionDto.getName(), responseBody.getName());
         assertEquals(sessionDto.getDescription(), responseBody.getDescription());
@@ -106,41 +75,12 @@ public class SessionControllerTests {
         List<SessionDto> sessionDtos = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            Session session = new Session();
+            List<User> users = makeUsers(5, false);
+            Teacher teacher = makeTeacher();
+            Session session = makeSession(i, users, teacher);
+            SessionDto sessionDto = makeSessionDto(1, users, teacher);
 
-            List<User> users = new ArrayList<>();
-            for (int j = 0; j < 5; j++) {
-                User user = new User();
-                user.setAdmin(i % 3 == 0)
-                        .setId((long) j)
-                        .setEmail(j + "@gmail.com")
-                        .setCreatedAt(LocalDateTime.now())
-                        .setPassword("password")
-                        .setLastName("lastName")
-                        .setFirstName("firstName");
-                users.add(user);
-            }
-
-            Teacher teacher = new Teacher();
-            teacher.setId(1L)
-                    .setFirstName("firstName")
-                    .setLastName("lastName")
-                    .setCreatedAt(LocalDateTime.now());
-
-            session.setId((long) i)
-                    .setName("name" + i)
-                    .setDescription("description" + i)
-                    .setUsers(users)
-                    .setTeacher(teacher)
-                    .setCreatedAt(LocalDateTime.now());
             sessions.add(session);
-
-            SessionDto sessionDto = new SessionDto();
-            sessionDto.setId((long) i);
-            sessionDto.setName("name" + i);
-            sessionDto.setDescription("description" + i);
-            sessionDto.setTeacher_id(teacher.getId());
-            sessionDto.setUsers(new ArrayList<>(List.of(1L, 2L, 3L, 4L, 5L)));
             sessionDtos.add(sessionDto);
         }
 
@@ -165,16 +105,10 @@ public class SessionControllerTests {
 
     @Test
     public void testCreateSessionSuccessfully() {
-        SessionDto sessionDto = new SessionDto();
-        sessionDto.setId(1L);
-        sessionDto.setCreatedAt(LocalDateTime.now());
-        sessionDto.setUpdatedAt(LocalDateTime.now());
-        sessionDto.setName("test");
-        sessionDto.setDescription("description");
-        sessionDto.setTeacher_id(1L);
-        sessionDto.setDate(new Date());
-
-        Session session = new Session();
+        List<User> users = makeUsers(5, false);
+        Teacher teacher = makeTeacher();
+        SessionDto sessionDto = makeSessionDto(1, users, teacher);
+        Session session = makeSession(1, users, teacher);
 
         when(sessionMapper.toEntity(sessionDto)).thenReturn(session);
         when(sessionService.create(session)).thenReturn(session);
@@ -194,63 +128,149 @@ public class SessionControllerTests {
 
     @Test
     public void testUpdateSession() {
-        Teacher teacher = new Teacher();
-        teacher
-                .setId(1L)
-                .setCreatedAt(LocalDateTime.now())
-                .setFirstName("firstName")
-                .setLastName("lastName");
+        Teacher teacher = makeTeacher();
+        List<User> users = makeUsers(5, false);
+        Session originalSession = makeSession(1, users, teacher);
+        SessionDto sessionDto = makeSessionDto(1, users, teacher);
+        sessionDto.setName(originalSession.getName() + "-updated");
+        Session updatedSession = makeSession(1, users, teacher);
+        updatedSession.setName(sessionDto.getName());
 
-        List<User> users = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            User user = new User();
-            user.setAdmin(i % 3 == 0)
-                    .setId((long) i)
-                    .setEmail(i + "@gmail.com")
-                    .setCreatedAt(LocalDateTime.now())
-                    .setPassword("password")
-                    .setLastName("lastName")
-                    .setFirstName("firstName");
-            users.add(user);
-        }
-
-        Session originalSession = new Session();
-        originalSession
-                .setId(1L)
-                .setCreatedAt(LocalDateTime.now())
-                .setUpdatedAt(LocalDateTime.now())
-                .setName("test")
-                .setDescription("description")
-                .setUsers(users)
-                .setTeacher(teacher)
-                .setDate(new Date());
-
-
-
-        SessionDto sessionDto = new SessionDto();
-        sessionDto.setName("updated-test");
-        sessionDto.setDescription("updated-description");
-        sessionDto.setTeacher_id(1L);
-        sessionDto.setDate(new Date());
-
-        Session updatedSession = new Session();
-        updatedSession
-                .setId(1L)
-                .setCreatedAt(LocalDateTime.now())
-                .setUpdatedAt(LocalDateTime.now())
-                .setName(sessionDto.getName())
-                .setDescription(sessionDto.getDescription())
-                .setUsers(users)
-                .setTeacher(teacher)
-                .setDate(new Date());
         when(sessionMapper.toEntity(sessionDto)).thenReturn(updatedSession);
+        when(sessionService.update(sessionDto.getId(), updatedSession)).thenReturn(updatedSession);
+        when(sessionMapper.toDto(updatedSession)).thenReturn(sessionDto);
 
         ResponseEntity<?> successfulResponse = sessionController.update("1", sessionDto);
         ResponseEntity<?> badRequestResponse = sessionController.update("bad-request", sessionDto);
+
+        SessionDto sessionBody = (SessionDto) successfulResponse.getBody();
+
+        assertEquals(updatedSession.getId(), sessionBody.getId());
+        assertEquals(updatedSession.getName(), sessionBody.getName());
+        assertEquals(updatedSession.getDescription(), sessionBody.getDescription());
+        assertEquals(updatedSession.getTeacher().getId(), sessionBody.getTeacher_id());
+        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+    }
+
+    @Test
+    public void testDeleteSession() {
+        List<User> users = makeUsers(5,false);
+        Teacher teacher = makeTeacher();
+        Session session = makeSession(1, users, teacher);
+
+        when(sessionService.getById(1L)).thenReturn(session);
+        when(sessionService.getById(2L)).thenReturn(null);
+
+        ResponseEntity<?> successfulResponse = sessionController.save("1");
+        ResponseEntity<?> notFoundResponse = sessionController.save("2");
+        ResponseEntity<?> badRequestResponse = sessionController.save("bad-request");
+
+        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, notFoundResponse.getStatusCode());
+    }
+
+    @Test
+    public void testParticipateToSession() {
+        User user = makeUser(false);
+        List<User> users = makeUsers(6, false);
+        Teacher teacher = makeTeacher();
+        Session session = makeSession(1, users, teacher);
+
+        ResponseEntity<?> successfulResponse = sessionController.participate(session.getId().toString(), user.getId().toString());
+        ResponseEntity<?> badRequestResponse = sessionController.participate("bad-request", "bad-request");
 
         assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
         assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
     }
 
-    //todo: delete, participate, noLongerParticipate
+    @Test
+    public void testNoLongerParticipateToSession() {
+        User user = makeUser(false);
+        List<User> users = makeUsers(6, false);
+        Teacher teacher = makeTeacher();
+        Session session = makeSession(1, users, teacher);
+        ResponseEntity<?> successfulResponse = sessionController.participate(session.getId().toString(), user.getId().toString());
+        ResponseEntity<?> badRequestResponse = sessionController.participate("bad-request", "bad-request");
+        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+    }
+
+    private User makeUser(Boolean admin) {
+        User user = new User();
+        user.setAdmin(admin)
+                .setId(1L)
+                .setEmail("user@gmail.com")
+                .setCreatedAt(LocalDateTime.now())
+                .setPassword("password")
+                .setLastName("lastName")
+                .setFirstName("firstName");
+        return user;
+    }
+
+    private List<User> makeUsers(Integer number, Boolean admin) {
+        List<User> users = new ArrayList<>();
+        for (int i = 0; i < number; i++) {
+            User user = new User();
+            user.setAdmin(admin)
+                    .setId((long) i)
+                    .setEmail(i + "@gmail.com")
+                    .setCreatedAt(LocalDateTime.now())
+                    .setPassword("password" + i)
+                    .setLastName("lastName" + i)
+                    .setFirstName("firstName" + i);
+            users.add(user);
+        }
+        return users;
+    }
+
+    private Teacher makeTeacher() {
+        Teacher teacher = new Teacher();
+        teacher
+                .setId(1L)
+                .setCreatedAt(LocalDateTime.now())
+                .setFirstName("teacher")
+                .setLastName("teacher");
+        return teacher;
+    }
+
+    private Session makeSession(Integer id, List<User> users, Teacher teacher) {
+        Session session = new Session();
+        session
+                .setId((long) id)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now())
+                .setName("session" + id)
+                .setDescription("description" + id)
+                .setUsers(users)
+                .setTeacher(teacher)
+                .setDate(new Date());
+        return session;
+    }
+
+    private List<Session> makeSessions(Integer number, List<User> users, Teacher teacher) {
+        List<Session> sessions = new ArrayList<>();
+        for (int i = 0; i < number; i++) {
+            Session session = makeSession(i, users, teacher);
+            sessions.add(session);
+        }
+        return sessions;
+    }
+
+    private SessionDto makeSessionDto(Integer id, List<User> users, Teacher teacher) {
+        SessionDto sessionDto = new SessionDto();
+        sessionDto.setId((long) id);
+        sessionDto.setName("name" + id);
+        sessionDto.setDescription("description" + id);
+        sessionDto.setTeacher_id(teacher.getId());
+
+        List<Long> userIds = users.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        sessionDto.setUsers(userIds);
+
+        sessionDto.setDate(new Date());
+        return sessionDto;
+    }
 }

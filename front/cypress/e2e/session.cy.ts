@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import {Session} from "../../src/app/features/sessions/interfaces/session.interface";
+import {Teacher} from "../../src/app/interfaces/teacher.interface";
 
 const login = (admin: boolean) => {
   cy.visit('/login')
@@ -15,6 +17,29 @@ const login = (admin: boolean) => {
 
   cy.get('input[formControlName=email]').type("yoga@studio.com")
   cy.get('input[formControlName=password]').type(`${"test!1234"}{enter}{enter}`)
+}
+
+const yogaSession = (users: number[]): Session => {
+  return {
+    id: 1,
+    teacher_id: _.random(2),
+    createdAt: new Date("2024-10-29T17:51:57"),
+    date: new Date("2024-10-29T16:52:03.000+00:00"),
+    description: `this is a long description`,
+    name: `Session`,
+    updatedAt: new Date("2024-10-29T17:52:23"),
+    users: users,
+  }
+}
+
+const teacher = (id: number): Teacher => {
+  return {
+    id: id,
+    firstName: "firstname" + id,
+    lastName: "lastname" + id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
 }
 
 const yogaSessions = (number: number) => {
@@ -70,4 +95,105 @@ describe("Session list", () => {
   });
 })
 
+describe('Session Details', () => {
+  beforeEach(() => {
+    cy.intercept('GET', '/api/session', {
+      statusCode: 200,
+      body: yogaSessions(10),
+    }).as('sessionList')
+  });
 
+  it('should show the details of one session as not participating user and participate', () => {
+    cy.intercept('GET', '/api/session/0', {
+      statusCode: 200,
+      body: yogaSession([2,3,4]),
+    }).as('sessionDetails')
+    cy.intercept('POST', '/api/session/0/participate/1', {
+      statusCode: 200,
+    }).as('sessionParticipate');
+    login(false)
+    cy.wait('@sessionList');
+
+    cy.get('mat-card.item button .ml1').first().click()
+    cy.wait('@sessionDetails');
+
+    cy.get('.ml1').eq(0).should('contain.text', 'Participate').click();
+    cy.wait('@sessionParticipate');
+    cy.get('mat-card').first().should('contain.text', 'Description');
+    cy.get('mat-card').first().should('contain.text', 'Session');
+    cy.get('mat-card').first().should('contain.text', 'attendees');
+    cy.get('mat-card').first().should('contain.text', 'Create');
+    cy.get('mat-card').first().should('contain.html', 'img');
+  });
+
+  it('should show the details of one session as participating user and do not participate', () => {
+    cy.intercept('GET', '/api/session/0', {
+      statusCode: 200,
+      body: yogaSession([1,2,3]),
+    }).as('sessionDetails')
+    cy.intercept('DELETE', '/api/session/0/participate/1', {
+      statusCode: 200,
+    }).as('sessionDoNotParticipate');
+    login(false)
+    cy.wait('@sessionList');
+
+    cy.get('mat-card.item button .ml1').first().click()
+
+    cy.wait('@sessionDetails');
+    cy.get('.ml1').eq(0).should('contain.text', 'Do not participate').click();
+    cy.wait('@sessionDoNotParticipate');
+  });
+
+  it('should show the details of one session as admin and delete', () => {
+    cy.intercept('GET', '/api/session/0', {
+      statusCode: 200,
+      body: yogaSession([1,2,3]),
+    }).as('sessionDetails')
+
+    cy.intercept('DELETE', '/api/session/0', {
+      statusCode: 200,
+    }).as("sessionDelete");
+
+    login(true)
+    cy.wait('@sessionList');
+
+    cy.get('mat-card.item button .ml1').first().click()
+
+    cy.wait('@sessionDetails');
+    cy.get('.ml1').eq(0).should('contain.text', 'Delete').click();
+    cy.wait("@sessionDelete");
+  });
+})
+
+describe("Session Creation", () => {
+  beforeEach(() => {
+    cy.intercept('GET', '/api/session', {
+      statusCode: 200,
+      body: yogaSessions(10),
+    }).as('sessionList')
+
+    cy.intercept('GET', '/api/teacher', {
+      statusCode: 200,
+      body: [teacher(1)],
+    }).as('sessionList')
+  });
+
+  it('should create a session', () => {
+    login(true)
+
+    cy.intercept('POST', '/api/session', {
+      statusCode: 200,
+    }).as('sessionCreate')
+
+    cy.wait('@sessionList');
+    cy.get('mat-card button span.ml1').first().should('contain.text', 'Create').click()
+
+    cy.get('form [formControlName="name"]').should('contain.text', '').type(`${"Name"}`)
+    cy.get('form [formControlName="date"]').should('contain.text', '').type('2023-10-12')
+    cy.get('form [formControlName="teacher_id"]').should('contain.text', '').type('{enter}{downArrow}')
+    cy.get('form [formControlName="description"]').should('contain.text', '').type('My super very long description')
+    cy.get('form button').should('contain.text', 'Save').click()
+    cy.wait('@sessionCreate');
+    cy.url().should('include', '/sessions');
+  });
+})
