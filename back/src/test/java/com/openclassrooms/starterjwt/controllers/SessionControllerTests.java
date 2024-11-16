@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -41,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -71,9 +73,6 @@ public class SessionControllerTests {
     private UserDetailsServiceImpl userDetailsServiceImpl;
 
     @MockBean
-
-
-//    @InjectMocks
     private SessionController sessionController;
 
     @Test
@@ -89,12 +88,20 @@ public class SessionControllerTests {
         when(jwtUtils.validateJwtToken(anyString())).thenReturn(true);
         when(jwtUtils.getUserNameFromJwtToken(anyString())).thenReturn("mockUsername");
 
-        mvc.perform(MockMvcRequestBuilders
+        MvcResult result = mvc.perform(MockMvcRequestBuilders
                         .get("/api/session/{id}", 1L)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(sessionDto.getId()));
+                .andExpect(
+                        MockMvcResultMatchers
+                                .jsonPath("$.id")
+                                .value(1L)
+                )
+                .andReturn()
+        ;
+
+        System.out.println("JSON Response: " + result.getResponse().getContentAsString());
 
 //        ResponseEntity<?> successfulResponse = sessionController.findById("1");
 //        ResponseEntity<?> unsuccessfulResponse = sessionController.findById("2");
@@ -107,8 +114,6 @@ public class SessionControllerTests {
 //        assertNotNull(successfulResponse.getBody());
 
 //        SessionDto responseBody = (SessionDto) successfulResponse.getBody();
-
-        // mockMVC
 
 //        assertEquals(sessionDto.getId(), responseBody.getId());
 //        assertEquals(sessionDto.getName(), responseBody.getName());
