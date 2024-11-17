@@ -9,6 +9,7 @@ import com.openclassrooms.starterjwt.security.jwt.AuthEntryPointJwt;
 import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
 import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
 import com.openclassrooms.starterjwt.services.SessionService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,34 +48,41 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest()
+//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
-@AutoConfigureMockMvc
+//@AutoConfigureMockMvc
 public class SessionControllerTests {
 
-    @Autowired
     private MockMvc mvc;
 
-    @MockBean
+    @Mock
     private SessionService sessionService;
 
-    @MockBean
+    @Mock
     private SessionMapper sessionMapper;
 
-    @MockBean
+    @Mock
     private UserDetailsService userDetailsService;
 
-    @MockBean
+    @Mock
     private AuthEntryPointJwt authEntryPointJwt;
 
-    @MockBean
+    @Mock
     private JwtUtils jwtUtils;
 
-    @MockBean
+    @Mock
     private UserDetailsServiceImpl userDetailsServiceImpl;
 
-    @MockBean
     private SessionController sessionController;
+
+    @BeforeEach
+    public void setUp() {
+        sessionController = new SessionController(sessionService, sessionMapper);
+
+        mvc = MockMvcBuilders
+                .standaloneSetup(sessionController)
+                .build();
+    }
 
     @Test
     public void testFindBySessionId() throws Exception {
@@ -84,9 +93,9 @@ public class SessionControllerTests {
 
         when(sessionService.getById(1L)).thenReturn(session);
         when(sessionMapper.toDto(session)).thenReturn(sessionDto);
-
-        when(jwtUtils.validateJwtToken(anyString())).thenReturn(true);
-        when(jwtUtils.getUserNameFromJwtToken(anyString())).thenReturn("mockUsername");
+        //Non necessaire pour le test du controller
+        //when(jwtUtils.validateJwtToken(anyString())).thenReturn(true);
+        //when(jwtUtils.getUserNameFromJwtToken(anyString())).thenReturn("mockUsername");
 
         MvcResult result = mvc.perform(MockMvcRequestBuilders
                         .get("/api/session/{id}", 1L)
@@ -102,26 +111,6 @@ public class SessionControllerTests {
         ;
 
         System.out.println("JSON Response: " + result.getResponse().getContentAsString());
-
-//        ResponseEntity<?> successfulResponse = sessionController.findById("1");
-//        ResponseEntity<?> unsuccessfulResponse = sessionController.findById("2");
-//        ResponseEntity<?> badRequestResponse = sessionController.findById("bad-request");
-//
-//        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-//        assertEquals(HttpStatus.NOT_FOUND, unsuccessfulResponse.getStatusCode());
-//        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
-
-//        assertNotNull(successfulResponse.getBody());
-
-//        SessionDto responseBody = (SessionDto) successfulResponse.getBody();
-
-//        assertEquals(sessionDto.getId(), responseBody.getId());
-//        assertEquals(sessionDto.getName(), responseBody.getName());
-//        assertEquals(sessionDto.getDescription(), responseBody.getDescription());
-//        assertEquals(sessionDto.getTeacher_id(), responseBody.getTeacher_id());
-//        assertEquals(sessionDto.getUsers(), responseBody.getUsers());
-//        assertEquals(sessionDto.getCreatedAt(), responseBody.getCreatedAt());
-//        assertEquals(sessionDto.getDate(), responseBody.getDate());
     }
 
     @Test
