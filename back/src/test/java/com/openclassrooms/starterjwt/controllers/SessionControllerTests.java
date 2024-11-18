@@ -38,11 +38,9 @@ public class SessionControllerTests {
     @Mock
     private SessionMapper sessionMapper;
 
-    private SessionController sessionController;
-
     @BeforeEach
     public void setUp() {
-        sessionController = new SessionController(sessionService, sessionMapper);
+        SessionController sessionController = new SessionController(sessionService, sessionMapper);
 
         mvc = MockMvcBuilders
                 .standaloneSetup(sessionController)
