@@ -1,35 +1,19 @@
 package com.openclassrooms.starterjwt.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.starterjwt.dto.SessionDto;
 import com.openclassrooms.starterjwt.mapper.SessionMapper;
 import com.openclassrooms.starterjwt.models.Session;
 import com.openclassrooms.starterjwt.models.Teacher;
 import com.openclassrooms.starterjwt.models.User;
-import com.openclassrooms.starterjwt.security.jwt.AuthEntryPointJwt;
-import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
-import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
 import com.openclassrooms.starterjwt.services.SessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.SecurityConfig;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,17 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
-//@AutoConfigureMockMvc
 public class SessionControllerTests {
 
     private MockMvc mvc;
@@ -60,18 +37,6 @@ public class SessionControllerTests {
 
     @Mock
     private SessionMapper sessionMapper;
-
-    @Mock
-    private UserDetailsService userDetailsService;
-
-    @Mock
-    private AuthEntryPointJwt authEntryPointJwt;
-
-    @Mock
-    private JwtUtils jwtUtils;
-
-    @Mock
-    private UserDetailsServiceImpl userDetailsServiceImpl;
 
     private SessionController sessionController;
 
@@ -93,36 +58,40 @@ public class SessionControllerTests {
 
         when(sessionService.getById(1L)).thenReturn(session);
         when(sessionMapper.toDto(session)).thenReturn(sessionDto);
-        //Non necessaire pour le test du controller
-        //when(jwtUtils.validateJwtToken(anyString())).thenReturn(true);
-        //when(jwtUtils.getUserNameFromJwtToken(anyString())).thenReturn("mockUsername");
 
-        MvcResult result = mvc.perform(MockMvcRequestBuilders
+        mvc.perform(MockMvcRequestBuilders
                         .get("/api/session/{id}", 1L)
                         .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(
                         MockMvcResultMatchers
-                                .jsonPath("$.id")
-                                .value(1L)
-                )
-                .andReturn()
-        ;
+                                .jsonPath("$")
+                                .value(sessionDto)
+                );
 
-        System.out.println("JSON Response: " + result.getResponse().getContentAsString());
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/api/session/{id}", "bad-request")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(
+                        MockMvcResultMatchers
+                                .jsonPath("$")
+                                .doesNotExist()
+                );
+
     }
 
     @Test
-    public void testFindAllSessions() {
+    public void testFindAllSessions() throws Exception {
         List<Session> sessions = new ArrayList<>();
         List<SessionDto> sessionDtos = new ArrayList<>();
 
+        SessionDto sessionDto = null;
         for (int i = 0; i < 10; i++) {
             List<User> users = makeUsers(5, false);
             Teacher teacher = makeTeacher();
             Session session = makeSession(i, users, teacher);
-            SessionDto sessionDto = makeSessionDto(1, users, teacher);
+            sessionDto = makeSessionDto(i, users, teacher);
 
             sessions.add(session);
             sessionDtos.add(sessionDto);
@@ -131,47 +100,59 @@ public class SessionControllerTests {
         when(sessionService.findAll()).thenReturn(sessions);
         when(sessionMapper.toDto(sessions)).thenReturn(sessionDtos);
 
-        ResponseEntity<?> response = sessionController.findAll();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-
-        List<SessionDto> responseBody = (List<SessionDto>) response.getBody();
-        assertEquals(sessionDtos.size(), responseBody.size());
-        for (int i = 0; i < sessionDtos.size(); i++) {
-            assertEquals(sessionDtos.get(i).getId(), responseBody.get(i).getId());
-            assertEquals(sessionDtos.get(i).getName(), responseBody.get(i).getName());
-            assertEquals(sessionDtos.get(i).getDescription(), responseBody.get(i).getDescription());
-            assertEquals(sessionDtos.get(i).getTeacher_id(), responseBody.get(i).getTeacher_id());
-            assertEquals(sessionDtos.get(i).getUsers().size(), responseBody.get(i).getUsers().size());
-        }
+        mvc.perform(MockMvcRequestBuilders
+                        .get("/api/session")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id")
+                        .value(sessionDtos.get(0).getId().toString())
+                ).andExpect( MockMvcResultMatchers.jsonPath("$[" + (sessionDtos.size() - 1) + "].id")
+                        .value(sessionDtos.get(sessionDtos.size() - 1).getId().toString())
+                );
     }
 
     @Test
-    public void testCreateSessionSuccessfully() {
+    public void testCreateSessionSuccessfully() throws Exception {
         List<User> users = makeUsers(5, false);
         Teacher teacher = makeTeacher();
-        SessionDto sessionDto = makeSessionDto(1, users, teacher);
+
+        SessionDto sessionDto = new SessionDto();
+        sessionDto.setName("session1");
+        sessionDto.setDescription("description1");
+        sessionDto.setTeacher_id(1L);
+        sessionDto.setDate(new Date());
+
         Session session = makeSession(1, users, teacher);
 
         when(sessionMapper.toEntity(sessionDto)).thenReturn(session);
         when(sessionService.create(session)).thenReturn(session);
         when(sessionMapper.toDto(session)).thenReturn(sessionDto);
 
-        ResponseEntity<?> response = sessionController.create(sessionDto);
+        String jsonPayload = new ObjectMapper().writeValueAsString(sessionDto);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-
-        SessionDto responseBody = (SessionDto) response.getBody();
-        assertEquals(sessionDto.getId(), responseBody.getId());
-        assertEquals(sessionDto.getName(), responseBody.getName());
-        assertEquals(sessionDto.getDescription(), responseBody.getDescription());
-        assertEquals(sessionDto.getTeacher_id(), responseBody.getTeacher_id());
+        mvc.perform(MockMvcRequestBuilders.post("/api/session")
+                        .content(jsonPayload)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$").value(sessionDto))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(session.getName()))
+                .andReturn()
+        ;
+        mvc.perform(MockMvcRequestBuilders.post("/api/session")
+                        .content(new ObjectMapper().writeValueAsString(new SessionDto()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$").doesNotExist())
+                .andReturn()
+        ;
     }
 
     @Test
-    public void testUpdateSession() {
+    public void testUpdateSession() throws Exception {
         Teacher teacher = makeTeacher();
         List<User> users = makeUsers(5, false);
         Session originalSession = makeSession(1, users, teacher);
@@ -184,21 +165,29 @@ public class SessionControllerTests {
         when(sessionService.update(sessionDto.getId(), updatedSession)).thenReturn(updatedSession);
         when(sessionMapper.toDto(updatedSession)).thenReturn(sessionDto);
 
-        ResponseEntity<?> successfulResponse = sessionController.update("1", sessionDto);
-        ResponseEntity<?> badRequestResponse = sessionController.update("bad-request", sessionDto);
+        String jsonPayload = new ObjectMapper().writeValueAsString(sessionDto);
 
-        SessionDto sessionBody = (SessionDto) successfulResponse.getBody();
+        mvc.perform(MockMvcRequestBuilders.put("/api/session/{id}", 1L)
+                .content(jsonPayload)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$").value(sessionDto))
+        ;
 
-        assertEquals(updatedSession.getId(), sessionBody.getId());
-        assertEquals(updatedSession.getName(), sessionBody.getName());
-        assertEquals(updatedSession.getDescription(), sessionBody.getDescription());
-        assertEquals(updatedSession.getTeacher().getId(), sessionBody.getTeacher_id());
-        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+        mvc.perform(MockMvcRequestBuilders.put("/api/session/{id}", "bad-request")
+                        .content(jsonPayload)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$").doesNotExist())
+        ;
     }
 
     @Test
-    public void testDeleteSession() {
+    public void testDeleteSession() throws Exception {
         List<User> users = makeUsers(5,false);
         Teacher teacher = makeTeacher();
         Session session = makeSession(1, users, teacher);
@@ -206,51 +195,35 @@ public class SessionControllerTests {
         when(sessionService.getById(1L)).thenReturn(session);
         when(sessionService.getById(2L)).thenReturn(null);
 
-        ResponseEntity<?> successfulResponse = sessionController.save("1");
-        ResponseEntity<?> notFoundResponse = sessionController.save("2");
-        ResponseEntity<?> badRequestResponse = sessionController.save("bad-request");
+        mvc.perform(MockMvcRequestBuilders.delete("/api/session/{id}", 1L)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
 
-        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
-        assertEquals(HttpStatus.NOT_FOUND, notFoundResponse.getStatusCode());
+        mvc.perform(MockMvcRequestBuilders.delete("/api/session/{id}", 2L)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isNotFound());
+
+        mvc.perform(MockMvcRequestBuilders.delete("/api/session/{id}", "bad-request")
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testParticipateToSession() {
-        User user = makeUser(false);
-        List<User> users = makeUsers(6, false);
-        Teacher teacher = makeTeacher();
-        Session session = makeSession(1, users, teacher);
-
-        ResponseEntity<?> successfulResponse = sessionController.participate(session.getId().toString(), user.getId().toString());
-        ResponseEntity<?> badRequestResponse = sessionController.participate("bad-request", "bad-request");
-
-        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
+    public void testParticipateToSession() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.post("/api/session/{id}/participate/{userId}", 1L, 1L)
+                        .param("id", "1")
+                        .param("userId", "1")
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
     @Test
-    public void testNoLongerParticipateToSession() {
-        User user = makeUser(false);
-        List<User> users = makeUsers(6, false);
-        Teacher teacher = makeTeacher();
-        Session session = makeSession(1, users, teacher);
-        ResponseEntity<?> successfulResponse = sessionController.participate(session.getId().toString(), user.getId().toString());
-        ResponseEntity<?> badRequestResponse = sessionController.participate("bad-request", "bad-request");
-        assertEquals(HttpStatus.OK, successfulResponse.getStatusCode());
-        assertEquals(HttpStatus.BAD_REQUEST, badRequestResponse.getStatusCode());
-    }
-
-    private User makeUser(Boolean admin) {
-        User user = new User();
-        user.setAdmin(admin)
-                .setId(1L)
-                .setEmail("user@gmail.com")
-                .setCreatedAt(LocalDateTime.now())
-                .setPassword("password")
-                .setLastName("lastName")
-                .setFirstName("firstName");
-        return user;
+    public void testNoLongerParticipateToSession() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.delete("/api/session/{id}/participate/{userId}", 1L, 1L)
+                .param("id", "1")
+                .param("userId", "1")
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk());
     }
 
     private List<User> makeUsers(Integer number, Boolean admin) {
@@ -291,15 +264,6 @@ public class SessionControllerTests {
                 .setTeacher(teacher)
                 .setDate(new Date());
         return session;
-    }
-
-    private List<Session> makeSessions(Integer number, List<User> users, Teacher teacher) {
-        List<Session> sessions = new ArrayList<>();
-        for (int i = 0; i < number; i++) {
-            Session session = makeSession(i, users, teacher);
-            sessions.add(session);
-        }
-        return sessions;
     }
 
     private SessionDto makeSessionDto(Integer id, List<User> users, Teacher teacher) {
