@@ -1,35 +1,36 @@
 package com.openclassrooms.starterjwt.controllers;
 
-import static org.junit.jupiter.api.Assertions.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.payload.request.LoginRequest;
 import com.openclassrooms.starterjwt.payload.request.SignupRequest;
-import com.openclassrooms.starterjwt.payload.response.JwtResponse;
 import com.openclassrooms.starterjwt.repository.UserRepository;
 import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
 import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class AuthControllerTests {
-
-    @Mock
-    LoginRequest loginRequest;
 
     @Mock
     PasswordEncoder passwordEncoder;
@@ -41,21 +42,35 @@ public class AuthControllerTests {
     private UserRepository userRepository;
 
     @Mock
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
     @Mock
-    Authentication authentication;
+    private Authentication authentication;
 
-    @InjectMocks
-    private AuthController authController;
+    private MockMvc mvc;
+
+    @BeforeEach
+    public void setUp() {
+        AuthController sessionController = new AuthController(
+                authenticationManager,
+                passwordEncoder,
+                jwtUtils,
+                userRepository
+        );
+
+        mvc = MockMvcBuilders
+                .standaloneSetup(sessionController)
+                .build();
+    }
 
     @Test
-    public void testAuthenticateUserSuccessfully() {
+    public void testAuthenticateUser() throws Exception {
         String email = "yoga@studio.com";
         String password = "test!1234";
 
-        when(loginRequest.getEmail()).thenReturn(email);
-        when(loginRequest.getPassword()).thenReturn(password);
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
 
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L,
@@ -79,35 +94,32 @@ public class AuthControllerTests {
                 true
         );
 
+        String successPayload = new ObjectMapper().writeValueAsString(loginRequest);
+
         when(userRepository.findByEmail(email))
                 .thenReturn(Optional.of(user));
 
-        var response = authController.authenticateUser(loginRequest);
+        mvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
+                .content(successPayload)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userDetails.getId()))
+                .andExpect(jsonPath("$.token").value("mockJwtToken"));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        JwtResponse jwtResponse = (JwtResponse) response.getBody();
-        assertNotNull(jwtResponse);
-        assertEquals(userDetails.getId(), jwtResponse.getId());
-        assertEquals(userDetails.getUsername(), jwtResponse.getUsername());
-        assertEquals("mockJwtToken", jwtResponse.getToken());
+        String failurePayload = new ObjectMapper().writeValueAsString(new LoginRequest());
+
+        mvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
+                .content(failurePayload)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testAuthenticateUserUnsuccessfully() {
-        String email = "yoga@studio.com";
-        String password = "test!1234";
-
-        when(loginRequest.getEmail()).thenReturn(email);
-        when(loginRequest.getPassword()).thenReturn(password);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new AuthenticationException("Invalid Credentials") {});
-
-        assertThrows(AuthenticationException.class, () -> authController.authenticateUser(loginRequest));
-    }
-
-    @Test
-    public void testRegisterUserSuccessfully() {
+    public void testRegisterUser() throws Exception {
         String email = "yoga@studio.com";
         String password = "test!1234";
         String firstName = "max";
@@ -122,29 +134,29 @@ public class AuthControllerTests {
         when(userRepository.existsByEmail(email)).thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn("encoded" + password);
 
-        var response = authController.registerUser(signUpRequest);
+        User user = new User();
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setAdmin(false);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
+        String payload = new ObjectMapper().writeValueAsString(signUpRequest);
 
-    @Test
-    public void testRegisterUserUnsuccessfully() {
-        String email = "yoga@studio.com";
-        String password = "test!1234";
-        String firstName = "max";
-        String lastName = "dlr";
+        mvc.perform(MockMvcRequestBuilders.post("/api/auth/register")
+                .content(payload)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User registered successfully!"));
 
-        SignupRequest signUpRequest = new SignupRequest();
-        signUpRequest.setEmail(email);
-        signUpRequest.setPassword(password);
-        signUpRequest.setFirstName(firstName);
-        signUpRequest.setLastName(lastName);
+        signUpRequest.setEmail(null);
+        payload = new ObjectMapper().writeValueAsString(signUpRequest);
 
-        when(userRepository.existsByEmail(email)).thenReturn(true);
-        when(passwordEncoder.encode(password)).thenReturn("encoded" + password);
-
-        var response = authController.registerUser(signUpRequest);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        mvc.perform(MockMvcRequestBuilders.post("/api/auth/register")
+                .content(payload)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
     }
 }

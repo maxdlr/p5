@@ -133,7 +133,7 @@ public class SessionControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         )
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").value(sessionDto))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(session.getName()))
                 .andReturn()
@@ -143,7 +143,7 @@ public class SessionControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").doesNotExist())
                 .andReturn()
         ;
