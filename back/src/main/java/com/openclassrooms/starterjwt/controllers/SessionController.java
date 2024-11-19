@@ -45,7 +45,6 @@ public class SessionController {
     @GetMapping()
     public ResponseEntity<?> findAll() {
         List<Session> sessions = this.sessionService.findAll();
-
         return ResponseEntity.ok().body(this.sessionMapper.toDto(sessions));
     }
 
