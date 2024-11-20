@@ -135,10 +135,11 @@ public class AuthControllerTests {
         when(passwordEncoder.encode(password)).thenReturn("encoded" + password);
 
         User user = new User();
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setAdmin(false);
+        user
+                .setEmail(email)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setAdmin(false);
 
         String payload = new ObjectMapper().writeValueAsString(signUpRequest);
 

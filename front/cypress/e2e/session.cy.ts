@@ -126,6 +126,8 @@ describe('Session Details', () => {
     cy.get('mat-card').first().should('contain.html', 'img');
   });
 
+  //todo: below, dissociate display test and do not participate test
+
   it('should show the details of one session as participating user and do not participate', () => {
     cy.intercept('GET', '/api/session/0', {
       statusCode: 200,
@@ -141,8 +143,11 @@ describe('Session Details', () => {
 
     cy.wait('@sessionDetails');
     cy.get('.ml1').eq(0).should('contain.text', 'Do not participate').click();
+    // todo: test session content
     cy.wait('@sessionDoNotParticipate');
   });
+
+  //todo: below, dissociate display test and delete test
 
   it('should show the details of one session as admin and delete', () => {
     cy.intercept('GET', '/api/session/0', {
@@ -161,6 +166,7 @@ describe('Session Details', () => {
 
     cy.wait('@sessionDetails');
     cy.get('.ml1').eq(0).should('contain.text', 'Delete').click();
+    // todo: test session content
     cy.wait("@sessionDelete");
   });
 })
@@ -196,4 +202,8 @@ describe("Session Creation", () => {
     cy.wait('@sessionCreate');
     cy.url().should('include', '/sessions');
   });
+
+  //todo: test all fields show required-field message if missing one
+  //todo: test Session edition display and edition
 })
+
