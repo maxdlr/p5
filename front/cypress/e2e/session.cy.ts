@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import {Session} from "../../src/app/features/sessions/interfaces/session.interface";
 import {Teacher} from "../../src/app/interfaces/teacher.interface";
 
@@ -126,8 +126,6 @@ describe('Session Details', () => {
     cy.get('mat-card').first().should('contain.html', 'img');
   });
 
-  //todo: below, dissociate display test and do not participate test
-
   it('should show the details of one session as participating user and do not participate', () => {
     cy.intercept('GET', '/api/session/0', {
       statusCode: 200,
@@ -143,11 +141,11 @@ describe('Session Details', () => {
 
     cy.wait('@sessionDetails');
     cy.get('.ml1').eq(0).should('contain.text', 'Do not participate').click();
-    // todo: test session content
+
+    cy.get("div.description").first().should('contain.text', 'this is a long description');
+    cy.get("h1").first().should('contain.text', 'Session');
     cy.wait('@sessionDoNotParticipate');
   });
-
-  //todo: below, dissociate display test and delete test
 
   it('should show the details of one session as admin and delete', () => {
     cy.intercept('GET', '/api/session/0', {
@@ -166,7 +164,6 @@ describe('Session Details', () => {
 
     cy.wait('@sessionDetails');
     cy.get('.ml1').eq(0).should('contain.text', 'Delete').click();
-    // todo: test session content
     cy.wait("@sessionDelete");
   });
 })
@@ -194,6 +191,7 @@ describe("Session Creation", () => {
     cy.wait('@sessionList');
     cy.get('mat-card button span.ml1').first().should('contain.text', 'Create').click()
 
+    cy.get('form button').should('be.disabled')
     cy.get('form [formControlName="name"]').should('contain.text', '').type(`${"Name"}`)
     cy.get('form [formControlName="date"]').should('contain.text', '').type('2023-10-12')
     cy.get('form [formControlName="teacher_id"]').should('contain.text', '').type('{enter}{downArrow}')
@@ -202,8 +200,38 @@ describe("Session Creation", () => {
     cy.wait('@sessionCreate');
     cy.url().should('include', '/sessions');
   });
-
-  //todo: test all fields show required-field message if missing one
-  //todo: test Session edition display and edition
 })
+
+describe("should edit a session", () => {
+  beforeEach(() => {
+    cy.intercept('GET', '/api/session', {
+      statusCode: 200,
+      body: yogaSessions(20),
+    }).as('sessionList')
+  })
+
+  it('should show the session list as admin', () => {
+    login(true)
+    cy.intercept('GET', '/api/session/0', {
+      statusCode: 200,
+      body: yogaSession([1,2,3]),
+    }).as('sessionDetails')
+
+    cy.intercept('PUT', '/api/session/0', {
+      statusCode: 200,
+    }).as('sessionUpdate')
+
+    cy.wait('@sessionList');
+    cy.get('mat-card.item button .ml1').eq(1).should('contain.text', 'Edit').click();
+    cy.url().should('include', '/update/0');
+    cy.wait('@sessionDetails');
+    cy.get('form [formControlName="name"]').type(`${"Name"}`)
+    cy.get('form [formControlName="date"]').type('2023-10-12')
+    cy.get('form [formControlName="teacher_id"]').type('{enter}{downArrow}')
+    cy.get('form [formControlName="description"]').type('My super very long description')
+    cy.get('form button').should('contain.text', 'Save').click()
+    cy.wait("@sessionUpdate");
+    cy.url().should('include', '/sessions');
+  })
+});
 
