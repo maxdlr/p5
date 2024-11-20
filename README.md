@@ -28,14 +28,14 @@ For launch and generate the jacoco code coverage:
 
 ### Création session
 - [x] La session est créée
-- [ ] L’affichage d’erreur en l’absence d’un champ obligatoire
+- [x] L’affichage d’erreur en l’absence d’un champ obligatoire
 
 ### Suppression session
 - [x] La session est correctement supprimée 
 
 ### Modification session
-- [ ] La session est modifiée
-- [ ] L’affichage d’erreur en l’absence d’un champ obligatoire
+- [x] La session est modifiée
+- [x] L’affichage d’erreur en l’absence d’un champ obligatoire
 
 ## User
 `UserControllerTests`
