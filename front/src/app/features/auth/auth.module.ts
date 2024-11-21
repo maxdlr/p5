@@ -16,21 +16,18 @@ const materialModules = [
   MatCardModule,
   MatFormFieldModule,
   MatIconModule,
-  MatInputModule
-]
+  MatInputModule,
+];
 
 @NgModule({
-  declarations: [
-    RegisterComponent,
-    LoginComponent
-  ],
+  declarations: [RegisterComponent, LoginComponent],
   imports: [
     AuthRoutingModule,
     CommonModule,
     FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
-    ...materialModules
-  ]
+    ...materialModules,
+  ],
 })
-export class AuthModule { }
+export class AuthModule {}

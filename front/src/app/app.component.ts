@@ -8,14 +8,14 @@ import { SessionService } from './services/session.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private sessionService: SessionService) {
-  }
+    private sessionService: SessionService,
+  ) {}
 
   public $isLogged(): Observable<boolean> {
     return this.sessionService.$isLogged();
@@ -23,6 +23,6 @@ export class AppComponent {
 
   public logout(): void {
     this.sessionService.logOut();
-    this.router.navigate([''])
+    this.router.navigate(['']);
   }
 }
