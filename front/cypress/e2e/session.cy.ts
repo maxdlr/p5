@@ -1,16 +1,16 @@
 import { cyUtils } from './utils-cy';
+import { User } from '../../src/app/interfaces/user.interface';
+
+const user: User = cyUtils.user(1);
+const admin: User = cyUtils.user(2, true);
 
 describe('Session list', () => {
   beforeEach(() => {
-    cy.intercept('GET', '/api/session', {
-      statusCode: 200,
-      body: cyUtils.yogaSessions(10),
-    }).as('sessionList');
+    cyUtils.expectSessionList();
   });
 
   it('should show the session list as admin', () => {
-    cyUtils.login(true);
-
+    cyUtils.login(admin);
     cy.wait('@sessionList');
 
     cy.get('div.items').should('be.visible');
@@ -23,8 +23,7 @@ describe('Session list', () => {
   });
 
   it('should show the session list as user', () => {
-    cyUtils.login(false);
-
+    cyUtils.login(user);
     cy.wait('@sessionList');
 
     cy.get('div.items').should('be.visible');
@@ -43,10 +42,7 @@ describe('Session list', () => {
 
 describe('Session Details', () => {
   beforeEach(() => {
-    cy.intercept('GET', '/api/session', {
-      statusCode: 200,
-      body: cyUtils.yogaSessions(10),
-    }).as('sessionList');
+    cyUtils.expectSessionList();
   });
 
   it('should show the details of one session as not participating user and participate', () => {
@@ -57,7 +53,7 @@ describe('Session Details', () => {
     cy.intercept('POST', '/api/session/0/participate/1', {
       statusCode: 200,
     }).as('sessionParticipate');
-    cyUtils.login(false);
+    cyUtils.login(user);
     cy.wait('@sessionList');
 
     cy.get('mat-card.item button .ml1').first().click();
@@ -80,7 +76,7 @@ describe('Session Details', () => {
     cy.intercept('DELETE', '/api/session/0/participate/1', {
       statusCode: 200,
     }).as('sessionDoNotParticipate');
-    cyUtils.login(false);
+    cyUtils.login(user);
     cy.wait('@sessionList');
 
     cy.get('mat-card.item button .ml1').first().click();
@@ -105,7 +101,7 @@ describe('Session Details', () => {
       statusCode: 200,
     }).as('sessionDelete');
 
-    cyUtils.login(true);
+    cyUtils.login(admin);
     cy.wait('@sessionList');
 
     cy.get('mat-card.item button .ml1').first().click();
@@ -118,10 +114,7 @@ describe('Session Details', () => {
 
 describe('Session Creation', () => {
   beforeEach(() => {
-    cy.intercept('GET', '/api/session', {
-      statusCode: 200,
-      body: cyUtils.yogaSessions(10),
-    }).as('sessionList');
+    cyUtils.expectSessionList();
 
     cy.intercept('GET', '/api/teacher', {
       statusCode: 200,
@@ -130,7 +123,7 @@ describe('Session Creation', () => {
   });
 
   it('should create a session', () => {
-    cyUtils.login(true);
+    cyUtils.login(admin);
 
     cy.intercept('POST', '/api/session', {
       statusCode: 200,
@@ -145,7 +138,7 @@ describe('Session Creation', () => {
     cy.get('form button').should('be.disabled');
     cy.get('form [formControlName="name"]')
       .should('contain.text', '')
-      .type(`${'Name'}`);
+      .type(`Name`);
     cy.get('form [formControlName="date"]')
       .should('contain.text', '')
       .type('2023-10-12');
@@ -163,14 +156,11 @@ describe('Session Creation', () => {
 
 describe('should edit a session', () => {
   beforeEach(() => {
-    cy.intercept('GET', '/api/session', {
-      statusCode: 200,
-      body: cyUtils.yogaSessions(20),
-    }).as('sessionList');
+    cyUtils.expectSessionList();
   });
 
   it('should show the session list as admin', () => {
-    cyUtils.login(true);
+    cyUtils.login(admin);
     cy.intercept('GET', '/api/session/0', {
       statusCode: 200,
       body: cyUtils.yogaSession([1, 2, 3]),
@@ -187,7 +177,7 @@ describe('should edit a session', () => {
       .click();
     cy.url().should('include', '/update/0');
     cy.wait('@sessionDetails');
-    cy.get('form [formControlName="name"]').type(`${'Name'}`);
+    cy.get('form [formControlName="name"]').type('Name');
     cy.get('form [formControlName="date"]').type('2023-10-12');
     cy.get('form [formControlName="teacher_id"]').type('{enter}{downArrow}');
     cy.get('form [formControlName="description"]').type(

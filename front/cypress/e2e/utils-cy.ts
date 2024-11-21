@@ -1,27 +1,26 @@
 import { Session } from '../../src/app/features/sessions/interfaces/session.interface';
 import * as _ from 'lodash';
 import { Teacher } from '../../src/app/interfaces/teacher.interface';
+import { User } from '../../src/app/interfaces/user.interface';
 
-const login = (admin: boolean) => {
+const login = (user: User) => {
   cy.visit('/login');
   cy.intercept('POST', '/api/auth/login', {
     statusCode: 200,
     body: {
-      id: 1,
-      username: 'userName',
-      firstName: 'firstName',
-      lastName: 'lastName',
-      admin: admin,
+      id: user.id,
+      username: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      admin: user.admin,
     },
   });
 
   cy.get('input[formControlName=email]').type('yoga@studio.com');
-  cy.get('input[formControlName=password]').type(
-    `${'test!1234'}{enter}{enter}`,
-  );
+  cy.get('input[formControlName=password]').type(`test!1234{enter}{enter}`);
 };
 
-const yogaSession = (users: number[]): Session => {
+const yogaSession = (participantsCount: number[]): Session => {
   return {
     id: 1,
     teacher_id: _.random(2),
@@ -30,7 +29,7 @@ const yogaSession = (users: number[]): Session => {
     description: `this is a long description`,
     name: `Session`,
     updatedAt: new Date('2024-10-29T17:52:23'),
-    users: users,
+    users: participantsCount,
   };
 };
 
@@ -41,6 +40,19 @@ const teacher = (id: number): Teacher => {
     lastName: 'lastname' + id,
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+};
+
+const user = (id: number, isAdmin: boolean = false): User => {
+  return {
+    id: id,
+    email: 'email@email.com' + id,
+    firstName: 'firstname' + id,
+    lastName: 'lastname' + id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    admin: isAdmin,
+    password: 'password' + id,
   };
 };
 
@@ -63,9 +75,26 @@ const yogaSessions = (number: number) => {
   return sessions;
 };
 
+const expectSessionList = () => {
+  cy.intercept('GET', '/api/session', {
+    statusCode: 200,
+    body: yogaSessions(10),
+  }).as('sessionList');
+};
+
+const expectUserById = (user: User, as: string = 'userById') => {
+  cy.intercept('GET', '/api/user/' + user.id, {
+    statusCode: 200,
+    body: user,
+  }).as(as);
+};
+
 export const cyUtils = {
   login,
   yogaSession,
   yogaSessions,
   teacher,
+  expectSessionList,
+  expectUserById,
+  user,
 };
