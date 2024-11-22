@@ -104,7 +104,7 @@ public class SessionControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].id")
                         .value(sessionDtos.get(0).getId().toString())
-                ).andExpect( MockMvcResultMatchers.jsonPath("$[" + (sessionDtos.size() - 1) + "].id")
+                ).andExpect( MockMvcResultMatchers.jsonPath("$[9].id")
                         .value(sessionDtos.get(sessionDtos.size() - 1).getId().toString())
                 );
     }

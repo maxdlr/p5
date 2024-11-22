@@ -99,7 +99,7 @@ public class TeacherControllerTests {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(
-                        jsonPath("$[" + (teacherDtos.size() - 1) + "].id")
+                        jsonPath("$[9].id")
                         .value(teacherDtos.get((teacherDtos.size() - 1)).getId().toString())
                 );
     }
