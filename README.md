@@ -23,7 +23,7 @@ For launch and generate the jacoco code coverage:
 - [x] L’apparition des boutons Create et Detail si l’utilisateur connecté est un admin
 
 ### Informations session
-- [ ] Les informations de la session sont correctement affichées
+- [x] Les informations de la session sont correctement affichées
 - [x] Le bouton Delete apparaît si l'utilisateur connecté est un admin
 
 ### Création session
