@@ -21,25 +21,21 @@ const materialModule = [
   MatIconModule,
   MatSnackBarModule,
   MatToolbarModule,
-]
+];
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    NotFoundComponent,
-    MeComponent,
-  ],
+  declarations: [AppComponent, NotFoundComponent, MeComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule, 
+    BrowserAnimationsModule,
     FlexLayoutModule,
     HttpClientModule,
-    ...materialModule
+    ...materialModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

@@ -23,21 +23,17 @@ const materialModules = [
   MatIconModule,
   MatInputModule,
   MatSnackBarModule,
-  MatSelectModule
+  MatSelectModule,
 ];
 
 @NgModule({
-  declarations: [
-    ListComponent,
-    FormComponent,
-    DetailComponent
-  ],
+  declarations: [ListComponent, FormComponent, DetailComponent],
   imports: [
     CommonModule,
     FlexLayoutModule,
     ReactiveFormsModule,
     SessionsRoutingModule,
-    ...materialModules
-  ]
+    ...materialModules,
+  ],
 })
-export class SessionsModule { }
+export class SessionsModule {}

@@ -81,11 +81,6 @@ public class AuthControllerTests {
                 "test!1234"
         );
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-        when(jwtUtils.generateJwtToken(authentication)).thenReturn("mockJwtToken");
-
         User user = new User(
                 userDetails.getUsername(),
                 userDetails.getLastName(),
@@ -93,6 +88,11 @@ public class AuthControllerTests {
                 userDetails.getPassword(),
                 true
         );
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(jwtUtils.generateJwtToken(authentication)).thenReturn("mockJwtToken");
 
         String successPayload = new ObjectMapper().writeValueAsString(loginRequest);
 
@@ -135,10 +135,11 @@ public class AuthControllerTests {
         when(passwordEncoder.encode(password)).thenReturn("encoded" + password);
 
         User user = new User();
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setAdmin(false);
+        user
+                .setEmail(email)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setAdmin(false);
 
         String payload = new ObjectMapper().writeValueAsString(signUpRequest);
 

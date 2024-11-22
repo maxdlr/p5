@@ -49,7 +49,7 @@ public class SessionControllerTests {
 
     @Test
     public void testFindBySessionId() throws Exception {
-        List<User> users = makeUsers(5, false);
+        List<User> users = makeUsers();
         Teacher teacher = makeTeacher();
         Session session = makeSession(1, users, teacher);
         SessionDto sessionDto = makeSessionDto(1, users, teacher);
@@ -84,9 +84,9 @@ public class SessionControllerTests {
         List<Session> sessions = new ArrayList<>();
         List<SessionDto> sessionDtos = new ArrayList<>();
 
-        SessionDto sessionDto = null;
+        SessionDto sessionDto;
         for (int i = 0; i < 10; i++) {
-            List<User> users = makeUsers(5, false);
+            List<User> users = makeUsers();
             Teacher teacher = makeTeacher();
             Session session = makeSession(i, users, teacher);
             sessionDto = makeSessionDto(i, users, teacher);
@@ -104,14 +104,14 @@ public class SessionControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].id")
                         .value(sessionDtos.get(0).getId().toString())
-                ).andExpect( MockMvcResultMatchers.jsonPath("$[" + (sessionDtos.size() - 1) + "].id")
+                ).andExpect( MockMvcResultMatchers.jsonPath("$[9].id")
                         .value(sessionDtos.get(sessionDtos.size() - 1).getId().toString())
                 );
     }
 
     @Test
     public void testCreateSessionSuccessfully() throws Exception {
-        List<User> users = makeUsers(5, false);
+        List<User> users = makeUsers();
         Teacher teacher = makeTeacher();
 
         SessionDto sessionDto = new SessionDto();
@@ -152,7 +152,7 @@ public class SessionControllerTests {
     @Test
     public void testUpdateSession() throws Exception {
         Teacher teacher = makeTeacher();
-        List<User> users = makeUsers(5, false);
+        List<User> users = makeUsers();
         Session originalSession = makeSession(1, users, teacher);
         SessionDto sessionDto = makeSessionDto(1, users, teacher);
         sessionDto.setName(originalSession.getName() + "-updated");
@@ -186,7 +186,7 @@ public class SessionControllerTests {
 
     @Test
     public void testDeleteSession() throws Exception {
-        List<User> users = makeUsers(5,false);
+        List<User> users = makeUsers();
         Teacher teacher = makeTeacher();
         Session session = makeSession(1, users, teacher);
 
@@ -224,11 +224,11 @@ public class SessionControllerTests {
         ).andExpect(status().isOk());
     }
 
-    private List<User> makeUsers(Integer number, Boolean admin) {
+    private List<User> makeUsers() {
         List<User> users = new ArrayList<>();
-        for (int i = 0; i < number; i++) {
+        for (int i = 0; i < 5; i++) {
             User user = new User();
-            user.setAdmin(admin)
+            user.setAdmin(false)
                     .setId((long) i)
                     .setEmail(i + "@gmail.com")
                     .setCreatedAt(LocalDateTime.now())

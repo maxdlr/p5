@@ -28,9 +28,9 @@ describe('LoginComponent', () => {
         MatIconModule,
         MatFormFieldModule,
         MatInputModule,
-        ReactiveFormsModule]
-    })
-      .compileComponents();
+        ReactiveFormsModule,
+      ],
+    }).compileComponents();
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -40,8 +40,8 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
   it('should be empty', () => {
-    expect(component.form.getRawValue().email).toContain("")
-    expect(component.form.getRawValue().password).toContain("")
-    expect(component.onError).toBe(false)
+    expect(component.form.getRawValue().email).toContain('');
+    expect(component.form.getRawValue().password).toContain('');
+    expect(component.onError).toBe(false);
   });
 });

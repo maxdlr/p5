@@ -6,14 +6,17 @@ import { ListComponent } from './components/list/list.component';
 
 const routes: Routes = [
   { path: '', title: 'Sessions', component: ListComponent },
-  { path: 'detail/:id', title: 'Sessions - detail', component: DetailComponent },
+  {
+    path: 'detail/:id',
+    title: 'Sessions - detail',
+    component: DetailComponent,
+  },
   { path: 'create', title: 'Sessions - create', component: FormComponent },
-  { path: 'update/:id', title: 'Sessions - update', component: FormComponent }
+  { path: 'update/:id', title: 'Sessions - update', component: FormComponent },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class SessionsRoutingModule {
-}
+export class SessionsRoutingModule {}

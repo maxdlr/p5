@@ -8,16 +8,15 @@ import { SessionApiService } from '../../services/session-api.service';
 @Component({
   selector: 'app-list',
   templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss']
+  styleUrls: ['./list.component.scss'],
 })
 export class ListComponent {
-
   public sessions$: Observable<Session[]> = this.sessionApiService.all();
 
   constructor(
     private sessionService: SessionService,
-    private sessionApiService: SessionApiService
-  ) { }
+    private sessionApiService: SessionApiService,
+  ) {}
 
   get user(): SessionInformation | undefined {
     return this.sessionService.sessionInformation;
