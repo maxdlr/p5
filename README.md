@@ -40,8 +40,8 @@ For launch and generate the jacoco code coverage:
 ## User
 `UserControllerTests`
 ### Account
-- [ ] Affichage des informations de l’utilisateur
+- [x] Affichage des informations de l’utilisateur
 
 ### Logout
-- [ ] La déconnexion de l’utilisateur
+- [x] La déconnexion de l’utilisateur
 
