@@ -1,13 +1,12 @@
 package com.openclassrooms.starterjwt.controllers;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.openclassrooms.starterjwt.models.User;
-import com.openclassrooms.starterjwt.payload.request.LoginRequest;
-import com.openclassrooms.starterjwt.payload.request.SignupRequest;
-import com.openclassrooms.starterjwt.repository.UserRepository;
-import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
-import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,12 +21,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.payload.request.LoginRequest;
+import com.openclassrooms.starterjwt.payload.request.SignupRequest;
+import com.openclassrooms.starterjwt.repository.UserRepository;
+import com.openclassrooms.starterjwt.security.jwt.JwtUtils;
+import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthControllerTests {
@@ -51,15 +51,14 @@ public class AuthControllerTests {
 
     @BeforeEach
     public void setUp() {
-        AuthController sessionController = new AuthController(
+        AuthController authController = new AuthController(
                 authenticationManager,
                 passwordEncoder,
                 jwtUtils,
-                userRepository
-        );
+                userRepository);
 
         mvc = MockMvcBuilders
-                .standaloneSetup(sessionController)
+                .standaloneSetup(authController)
                 .build();
     }
 
@@ -78,16 +77,14 @@ public class AuthControllerTests {
                 "Admin",
                 "Admin",
                 true,
-                "test!1234"
-        );
+                "test!1234");
 
         User user = new User(
                 userDetails.getUsername(),
                 userDetails.getLastName(),
                 userDetails.getFirstName(),
                 userDetails.getPassword(),
-                true
-        );
+                true);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -102,8 +99,7 @@ public class AuthControllerTests {
         mvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
                 .content(successPayload)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userDetails.getId()))
                 .andExpect(jsonPath("$.token").value("mockJwtToken"));
@@ -113,8 +109,7 @@ public class AuthControllerTests {
         mvc.perform(MockMvcRequestBuilders.post("/api/auth/login")
                 .content(failurePayload)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
@@ -146,8 +141,7 @@ public class AuthControllerTests {
         mvc.perform(MockMvcRequestBuilders.post("/api/auth/register")
                 .content(payload)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User registered successfully!"));
 
@@ -157,7 +151,6 @@ public class AuthControllerTests {
         mvc.perform(MockMvcRequestBuilders.post("/api/auth/register")
                 .content(payload)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest());
+                .accept(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 }
