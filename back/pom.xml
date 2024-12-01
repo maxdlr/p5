@@ -129,8 +129,10 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 					<release>${java.version}</release>
+					<!-- Remove -proc:none to allow annotation processing -->
 					<compilerArgs>
-						<arg>-proc:none</arg>
+						<!-- Remove or comment out this argument to enable annotation processing -->
+						<!-- <arg>-proc:none</arg> -->
 					</compilerArgs>
 					<annotationProcessorPaths>
 						<path>
@@ -144,18 +146,13 @@
 							<version>${mapstruct.version}</version>
 						</path>
 					</annotationProcessorPaths>
-					<compilerArgs>
-						<arg>-proc:only</arg>
-						<arg>-processor</arg>
-						<arg>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</arg>
-					</compilerArgs>
 				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.5</version>
+				<version>0.8.7</version> <!-- Update version here -->
 				<executions>
 					<execution>
 						<goals>
@@ -191,6 +188,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 		</plugins>
 	</build>
 

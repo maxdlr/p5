@@ -1,0 +1,239 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SessionService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.openclassrooms.starterjwt.services</a>
+</div>
+
+<h1>Coverage Summary for Class: SessionService (com.openclassrooms.starterjwt.services)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SessionService</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.5%
+  </span>
+  <span class="absValue">
+    (3/26)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$0sI3vdld</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$8MT2d8FD</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$9ToohULp</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$dN3hkr7X</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$gDmCQTSd</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$HHlglptV</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$nI3fb3W7</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$PsDdkxM9</td>
+  </tr>
+  <tr>
+    <td class="name">SessionService$MockitoMock$ONDvQ6uT$auxiliary$uXR8Famj</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.5%
+  </span>
+  <span class="absValue">
+    (3/26)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.openclassrooms.starterjwt.services;
+&nbsp;
+&nbsp;import com.openclassrooms.starterjwt.exception.BadRequestException;
+&nbsp;import com.openclassrooms.starterjwt.exception.NotFoundException;
+&nbsp;import com.openclassrooms.starterjwt.models.Session;
+&nbsp;import com.openclassrooms.starterjwt.models.User;
+&nbsp;import com.openclassrooms.starterjwt.repository.SessionRepository;
+&nbsp;import com.openclassrooms.starterjwt.repository.UserRepository;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class SessionService {
+&nbsp;    private final SessionRepository sessionRepository;
+&nbsp;
+&nbsp;    private final UserRepository userRepository;
+&nbsp;
+<b class="fc">&nbsp;    public SessionService(SessionRepository sessionRepository, UserRepository userRepository) {</b>
+<b class="fc">&nbsp;        this.sessionRepository = sessionRepository;</b>
+<b class="fc">&nbsp;        this.userRepository = userRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Session create(Session session) {
+<b class="nc">&nbsp;        return this.sessionRepository.save(session);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void delete(Long id) {
+<b class="nc">&nbsp;        this.sessionRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Session&gt; findAll() {
+<b class="nc">&nbsp;        return this.sessionRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Session getById(Long id) {
+<b class="nc">&nbsp;        return this.sessionRepository.findById(id).orElse(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Session update(Long id, Session session) {
+<b class="nc">&nbsp;        session.setId(id);</b>
+<b class="nc">&nbsp;        return this.sessionRepository.save(session);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void participate(Long id, Long userId) {
+<b class="nc">&nbsp;        Session session = this.sessionRepository.findById(id).orElse(null);</b>
+<b class="nc">&nbsp;        User user = this.userRepository.findById(userId).orElse(null);</b>
+<b class="nc">&nbsp;        if (session == null || user == null) {</b>
+<b class="nc">&nbsp;            throw new NotFoundException();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean alreadyParticipate = session.getUsers().stream().anyMatch(o -&gt; o.getId().equals(userId));</b>
+<b class="nc">&nbsp;        if(alreadyParticipate) {</b>
+<b class="nc">&nbsp;            throw new BadRequestException();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        session.getUsers().add(user);</b>
+&nbsp;
+<b class="nc">&nbsp;        this.sessionRepository.save(session);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void noLongerParticipate(Long id, Long userId) {
+<b class="nc">&nbsp;        Session session = this.sessionRepository.findById(id).orElse(null);</b>
+<b class="nc">&nbsp;        if (session == null) {</b>
+<b class="nc">&nbsp;            throw new NotFoundException();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean alreadyParticipate = session.getUsers().stream().anyMatch(o -&gt; o.getId().equals(userId));</b>
+<b class="nc">&nbsp;        if(!alreadyParticipate) {</b>
+<b class="nc">&nbsp;            throw new BadRequestException();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        session.setUsers(session.getUsers().stream().filter(user -&gt; !user.getId().equals(userId)).collect(Collectors.toList()));</b>
+&nbsp;
+<b class="nc">&nbsp;        this.sessionRepository.save(session);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-12-01 13:49</div>
+</div>
+</body>
+</html>
