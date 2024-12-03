@@ -42,7 +42,9 @@ public class UserMapperTests {
         user.setEmail("john.doe@gmail.com");
         user.setPassword("password");
         user.setCreatedAt(LocalDateTime.now());
+
         UserDto userDto = userMapper.toDto(user);
+
         assertEquals(userDto.getFirstName(), user.getFirstName());
         assertEquals(userDto.getLastName(), user.getLastName());
         assertEquals(userDto.getEmail(), user.getEmail());
