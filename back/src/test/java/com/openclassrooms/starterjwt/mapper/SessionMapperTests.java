@@ -113,7 +113,6 @@ public class SessionMapperTests {
 
     @Test
     public void testToDtoList() {
-        // Arrange
         List<Session> sessions = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -136,11 +135,9 @@ public class SessionMapperTests {
             sessions.add(session);
         }
 
-        // Act
         List<SessionDto> sessionDtos = sessionMapper.toDto(sessions);
 
-        // Assert
-        assertEquals(5, sessionDtos.size(), "The size of the mapped list should be 5");
+        assertEquals(5, sessionDtos.size());
         for (int i = 0; i < 5; i++) {
             assertEquals(sessions.get(i).getName(), sessionDtos.get(i).getName());
             assertEquals(sessions.get(i).getDescription(), sessionDtos.get(i).getDescription());
@@ -149,7 +146,6 @@ public class SessionMapperTests {
 
     @Test
     public void testToEntityList() {
-        // Arrange
         List<SessionDto> sessionDtos = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -170,10 +166,8 @@ public class SessionMapperTests {
         when(teacherService.findById(any(Long.class))).thenReturn(new Teacher());
         when(userService.findById(any(Long.class))).thenReturn(new User());
 
-        // Act
         List<Session> sessions = sessionMapper.toEntity(sessionDtos);
 
-        // Assert
         assertEquals(5, sessions.size(), "The size of the mapped list should be 5");
         for (int i = 0; i < 5; i++) {
             assertEquals(sessionDtos.get(i).getName(), sessions.get(i).getName());

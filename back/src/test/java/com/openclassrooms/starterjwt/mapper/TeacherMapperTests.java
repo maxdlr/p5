@@ -54,7 +54,7 @@ public class TeacherMapperTests {
 
     @Test
     public void testToDtoList() {
-        // Arrange
+
         List<Teacher> teachers = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -66,10 +66,10 @@ public class TeacherMapperTests {
             teachers.add(teacher);
         }
 
-        // Act
+
         List<TeacherDto> teacherDtos = teacherMapper.toDto(teachers);
 
-        // Assert
+
         assertEquals(5, teacherDtos.size(), "The size of the mapped list should be 5");
         for (int i = 0; i < 5; i++) {
             assertEquals(teachers.get(i).getId(), teacherDtos.get(i).getId());
@@ -81,7 +81,7 @@ public class TeacherMapperTests {
 
     @Test
     public void testToEntityList() {
-        // Arrange
+
         List<TeacherDto> teacherDtos = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -93,10 +93,10 @@ public class TeacherMapperTests {
             teacherDtos.add(teacherDto);
         }
 
-        // Act
+
         List<Teacher> teachers = teacherMapper.toEntity(teacherDtos);
 
-        // Assert
+
         assertEquals(5, teachers.size(), "The size of the mapped list should be 5");
         for (int i = 0; i < 5; i++) {
             assertEquals(teacherDtos.get(i).getId(), teachers.get(i).getId());
