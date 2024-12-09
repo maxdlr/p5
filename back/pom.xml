@@ -153,6 +153,12 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.7</version> <!-- Update version here -->
+				<configuration>
+					<excludes>
+						<exclude>/com/openclassrooms/starterjwt/dto/*Dto.*</exclude>
+						<exclude>/com/openclassrooms/starterjwt/*JwtApplication.*</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

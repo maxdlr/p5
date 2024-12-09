@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserMapperTests {
@@ -50,5 +53,65 @@ public class UserMapperTests {
         assertEquals(userDto.getEmail(), user.getEmail());
         assertEquals(userDto.getPassword(), user.getPassword());
         assertEquals(userDto.getCreatedAt(), user.getCreatedAt());
+    }
+
+    @Test
+    public void testToDtoList() {
+        // Arrange
+        List<User> users = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            User user = new User();
+            user.setFirstName("User" + i);
+            user.setLastName("Lastname" + i);
+            user.setEmail("user" + i + "@example.com");
+            user.setPassword("password" + i);
+            user.setCreatedAt(LocalDateTime.now());
+
+            users.add(user);
+        }
+
+        // Act
+        List<UserDto> userDtos = userMapper.toDto(users);
+
+        // Assert
+        assertEquals(5, userDtos.size(), "The size of the mapped list should be 5");
+        for (int i = 0; i < 5; i++) {
+            assertEquals(users.get(i).getFirstName(), userDtos.get(i).getFirstName());
+            assertEquals(users.get(i).getLastName(), userDtos.get(i).getLastName());
+            assertEquals(users.get(i).getEmail(), userDtos.get(i).getEmail());
+            assertEquals(users.get(i).getPassword(), userDtos.get(i).getPassword());
+            assertEquals(users.get(i).getCreatedAt(), userDtos.get(i).getCreatedAt());
+        }
+    }
+
+    @Test
+    public void testToEntityList() {
+        // Arrange
+        List<UserDto> userDtos = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            UserDto userDto = new UserDto();
+            userDto.setFirstName("User" + i);
+            userDto.setLastName("Lastname" + i);
+            userDto.setEmail("user" + i + "@example.com");
+            userDto.setPassword("password" + i);
+            userDto.setCreatedAt(LocalDateTime.now());
+
+            userDtos.add(userDto);
+        }
+
+        // Act
+        List<User> users = userMapper.toEntity(userDtos);
+
+        // Assert
+        assertEquals(5, users.size(), "The size of the mapped list should be 5");
+        for (int i = 0; i < 5; i++) {
+            assertEquals(userDtos.get(i).getFirstName(), users.get(i).getFirstName());
+            assertEquals(userDtos.get(i).getLastName(), users.get(i).getLastName());
+            assertEquals(userDtos.get(i).getEmail(), users.get(i).getEmail());
+            assertEquals(userDtos.get(i).getPassword(), users.get(i).getPassword());
+            assertEquals(userDtos.get(i).getCreatedAt(), users.get(i).getCreatedAt());
+        }
     }
 }

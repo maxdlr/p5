@@ -110,4 +110,74 @@ public class SessionMapperTests {
         assertEquals(sessionDto.getUpdatedAt(), session.getUpdatedAt());
         assertEquals(sessionDto.getDate(), session.getDate());
     }
+
+    @Test
+    public void testToDtoList() {
+        // Arrange
+        List<Session> sessions = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            Teacher teacher = new Teacher();
+            teacher.setId((long) i);
+            teacher.setFirstName("Teacher" + i);
+            teacher.setLastName("Lastname" + i);
+            teacher.setCreatedAt(LocalDateTime.now());
+
+            Session session = new Session();
+            session.setId((long) i)
+                    .setName("Session " + i)
+                    .setDescription("Description " + i)
+                    .setCreatedAt(LocalDateTime.now())
+                    .setUpdatedAt(LocalDateTime.now())
+                    .setDate(new Date())
+                    .setTeacher(teacher)
+                    .setUsers(new ArrayList<>());
+
+            sessions.add(session);
+        }
+
+        // Act
+        List<SessionDto> sessionDtos = sessionMapper.toDto(sessions);
+
+        // Assert
+        assertEquals(5, sessionDtos.size(), "The size of the mapped list should be 5");
+        for (int i = 0; i < 5; i++) {
+            assertEquals(sessions.get(i).getName(), sessionDtos.get(i).getName());
+            assertEquals(sessions.get(i).getDescription(), sessionDtos.get(i).getDescription());
+        }
+    }
+
+    @Test
+    public void testToEntityList() {
+        // Arrange
+        List<SessionDto> sessionDtos = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            List<Long> users = new ArrayList<>();
+            users.add((long) i);
+
+            SessionDto sessionDto = new SessionDto();
+            sessionDto.setName("Session " + i);
+            sessionDto.setDescription("Description " + i);
+            sessionDto.setUsers(users);
+            sessionDto.setTeacher_id((long) i);
+            sessionDto.setCreatedAt(LocalDateTime.now());
+            sessionDto.setUpdatedAt(LocalDateTime.now());
+
+            sessionDtos.add(sessionDto);
+        }
+
+        when(teacherService.findById(any(Long.class))).thenReturn(new Teacher());
+        when(userService.findById(any(Long.class))).thenReturn(new User());
+
+        // Act
+        List<Session> sessions = sessionMapper.toEntity(sessionDtos);
+
+        // Assert
+        assertEquals(5, sessions.size(), "The size of the mapped list should be 5");
+        for (int i = 0; i < 5; i++) {
+            assertEquals(sessionDtos.get(i).getName(), sessions.get(i).getName());
+            assertEquals(sessionDtos.get(i).getDescription(), sessions.get(i).getDescription());
+        }
+    }
 }
