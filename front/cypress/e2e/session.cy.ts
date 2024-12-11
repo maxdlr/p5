@@ -53,6 +53,7 @@ describe('Session Details', () => {
     cy.intercept('POST', '/api/session/0/participate/1', {
       statusCode: 200,
     }).as('sessionParticipate');
+
     cyUtils.login(user);
     cy.wait('@sessionList');
 
