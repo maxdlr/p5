@@ -13,7 +13,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Objects;
@@ -99,7 +98,6 @@ public class AuthControllerIntegrationTests {
 
     @Test
     public void testAuthenticateUser_SuccessfulLogin() {
-        // Create and save a user to the repository
         String email = "testuser@example.com";
         String password = "password123";
         String firstName = "max";
@@ -110,42 +108,15 @@ public class AuthControllerIntegrationTests {
         user.setLastName(lastName);
         user.setAdmin(false);
         user.setEmail(email);
-      user.setPassword(passwordEncoder.encode(password)); // Encoded password
-//        user.setPassword(password);
+      user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(email);
         loginRequest.setPassword(password);
 
-        // Perform the login request
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", loginRequest, String.class);
 
         assertEquals(200, response.getStatusCodeValue());
-    }
-
-    @Test()
-    public void testAuthenticateUser_InvalidCredentials() {
-        // Create and save a user to the repository
-        String email = "testuser@example.com";
-        String password = "password123";
-        String firstName = "max";
-        String lastName = "dlr";
-        User user = new User();
-        user
-                .setEmail(email)
-                .setFirstName(firstName)
-                .setLastName(lastName)
-                .setAdmin(false);
-        user.setPassword(passwordEncoder.encode(password)); // Encoded password for 'password123'
-        userRepository.save(user);
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(email);
-        loginRequest.setPassword("wrongpassword");
-
-//      ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/login", loginRequest, String.class);
-
-//        assertEquals(401, response.getStatusCodeValue()); // Unauthorized
     }
 }
